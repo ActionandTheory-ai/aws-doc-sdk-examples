@@ -118,7 +118,8 @@ def receive_messages(queue, max_number, wait_time):
             WaitTimeSeconds=wait_time,
         )
         for msg in messages:
-            logger.info("Received message: %s: %s", msg.message_id, msg.body)
+            # logger.info("Received message: %s: %s", msg.message_id, msg.body)
+            print("Received message: %s: %s", msg.message_id, msg.body)
     except ClientError as error:
         logger.exception("Couldn't receive messages from queue: %s", queue)
         raise error
@@ -209,29 +210,29 @@ def usage_demo():
             int(msg.message_attributes["line"]["StringValue"]),
         )
 
-    print("-" * 88)
+    print("-" * 120)
     print("Welcome to the Amazon Simple Queue Service (Amazon SQS) demo!")
-    print("-" * 88)
+    print("-" * 120)
 
-    queue = queue_wrapper.create_queue("sqs-usage-demo-message-wrapper")
+    queue = queue_wrapper.get_queue("getStreamQueue-3f567ghTn3vv8ji.fifo")
+    print(queue.url)
+    # with open(__file__) as file:
+    #     lines = file.readlines()
 
-    with open(__file__) as file:
-        lines = file.readlines()
-
-    line = 0
-    batch_size = 10
-    received_lines = [None] * len(lines)
-    print(f"Sending file lines in batches of {batch_size} as messages.")
-    while line < len(lines):
-        messages = [
-            pack_message(__file__, lines[index], index)
-            for index in range(line, min(line + batch_size, len(lines)))
-        ]
-        line = line + batch_size
-        send_messages(queue, messages)
-        print(".", end="")
-        sys.stdout.flush()
-    print(f"Done. Sent {len(lines) - 1} messages.")
+    # line = 0
+    batch_size = 2
+    # received_lines = [None] * len(lines)
+    # print(f"Sending file lines in batches of {batch_size} as messages.")
+    # while line < len(lines):
+    #     messages = [
+    #         pack_message(__file__, lines[index], index)
+    #         for index in range(line, min(line + batch_size, len(lines)))
+    #     ]
+    #     line = line + batch_size
+    #     send_messages(queue, messages)
+    #     print(".", end="")
+    #     sys.stdout.flush()
+    # print(f"Done. Sent {len(lines) - 1} messages.")
 
     print(f"Receiving, handling, and deleting messages in batches of {batch_size}.")
     more_messages = True
@@ -240,20 +241,20 @@ def usage_demo():
         print(".", end="")
         sys.stdout.flush()
         for message in received_messages:
-            path, body, line = unpack_message(message)
-            received_lines[line] = body
+            # path, body, line = unpack_message(message)
+            print(f"/n/nmessage:\n{message}")
         if received_messages:
             delete_messages(queue, received_messages)
         else:
             more_messages = False
     print("Done.")
 
-    if all([lines[index] == received_lines[index] for index in range(len(lines))]):
-        print(f"Successfully reassembled all file lines!")
-    else:
-        print(f"Uh oh, some lines were missed!")
+    # if all([lines[index] == received_lines[index] for index in range(len(lines))]):
+    #     print(f"Successfully reassembled all file lines!")
+    # else:
+    #     print(f"Uh oh, some lines were missed!")
 
-    queue.delete()
+    # queue.delete()
 
     print("Thanks for watching!")
     print("-" * 88)
